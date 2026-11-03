@@ -2,8 +2,9 @@
 
 > **This is a fork of [dkraushar/marathon-turns](https://github.com/dkraushar/marathon-turns) by
 > [Dana Kraushar](https://www.linkedin.com/in/danakraushar/).** All of the method, code, design and the original
-> eight-city data are Dana's work. This fork adds one race, the **California International Marathon (CIM)** in
-> Sacramento, to the comparison, using the same pipeline and the same page. See [What this fork changes](#what-this-fork-changes).
+> eight-city data are Dana's work. This fork adds seven more races to the comparison (CIM, Marine Corps, Houston,
+> Los Angeles, Philadelphia, Valencia and Grandma's), using the same pipeline and the same page. See
+> [What this fork changes](#what-this-fork-changes).
 
 **How much farther would you run in the NYC Marathon if you took every turn on the outside?**
 
@@ -27,7 +28,7 @@ feet, however tight or gentle the corner. So the ceiling is Σ *wᵢ·|θᵢ|* o
 ```
 pipeline/lion.py       NYC: load LION street centerlines and build a routable graph
 pipeline/course.py     NYC: rebuild the course street by street, from the race-day road-closure list
-pipeline/cities.py     the eight World Marathon Majors (+ CIM) and where each course guide comes from
+pipeline/cities.py     the eight World Marathon Majors (+ 7 more races) and where each course guide comes from
 pipeline/osm.py        other cities: download OpenStreetMap streets along the course, estimate widths
 pipeline/match.py      snap a GPX course guide onto OpenStreetMap streets
 pipeline/calibrate.py  fit the OSM width estimate to NYC's measured LION widths
@@ -88,34 +89,53 @@ cd web && npm install && npm run dev
 
 ## What this fork changes
 
-**Result: CIM (2025 course), about +2,470 ft (0.47 mi) across 56 turns, or +2,720 ft (0.51 mi) corner to
-corner.** That ranks it last of the nine races, just behind Boston: like Boston, it's a point-to-point course
-(Folsom to the State Capitol) with long straight stretches on Folsom-Auburn Rd and Fair Oaks Blvd.
+This fork adds **seven races** to Dana's eight World Marathon Majors, for fifteen in all. Every new race goes
+through the same pipeline (GPS guide → snapped onto OpenStreetMap → turns → Σ *w·θ*) with the same width rule.
 
-- **Course guide:** a Strava GPS track of the 2025 race (which hosted the USATF Marathon Championships), saved as
-  `data/raw/gpx/cim.gpx` (not committed, like the other cities' GPX files). It's snapped onto OpenStreetMap by
-  the unchanged `match.py`: 26.38 mi guide → 26.44 mi course, never more than 62 ft from the GPS track.
-- **OSM data:** the public Overpass servers timed out on the course corridor, so CIM uses the repo's other OSM
-  route: a local extract read with osmium, here [BBBike's Sacramento extract](https://download.bbbike.org/osm/bbbike/Sacramento/)
-  (it reaches just past the Folsom start). Widths use the same lane-count rule as every other city.
-- **One artifact rule added** (`turns.py`, `drop_artifacts`): OSM maps Fair Oaks Blvd at Sunrise Blvd as two
+| Race | Course | Turns | Smooth arc | Corner to corner | OSM extract |
+|---|---|---:|---:|---:|---|
+| Valencia Marathon | 2025 | 142 | +8,200 ft (1.55 mi) | +9,290 ft | Geofabrik Valencia region |
+| Marine Corps Marathon | 2024 | 130 | +7,010 ft (1.33 mi) | +7,810 ft | BBBike WashingtonDC |
+| Philadelphia Marathon | 2025 | 102 | +5,090 ft (0.96 mi) | +5,600 ft | BBBike Philadelphia |
+| Los Angeles Marathon | 2026 | 73 | +4,770 ft (0.90 mi) | +5,580 ft | BBBike LosAngeles |
+| Chevron Houston Marathon | 2026 | 90 | +4,410 ft (0.84 mi) | +5,030 ft | Geofabrik Texas |
+| California International (CIM) | 2025 | 56 | +2,470 ft (0.47 mi) | +2,720 ft | BBBike Sacramento |
+| Grandma's Marathon | 2025 | 55 | +2,100 ft (0.40 mi) | +2,320 ft | Geofabrik Minnesota |
+
+For scale, the Majors run from London (+6,900 ft) down to Boston (+2,710 ft). Valencia and MCM top the table:
+Valencia winds through dozens of plazas and roundabouts, MCM through Georgetown, Hains Point, the Mall, the Capitol
+and Crystal City. Grandma's (Two Harbors to Duluth along Lake Superior) and CIM (Folsom to Sacramento) are long,
+straight point-to-point courses and come in below Boston.
+
+- **Course guides:** goandrace.com GPS tracks of the most recent edition with a marathon GPX (the same source the
+  Majors use; MCM's 2025 page has none yet, so 2024), saved as `data/raw/gpx/<slug>.gpx` and, like the originals,
+  not committed. CIM's is a Strava GPS track of the 2025 race (which hosted the USATF Marathon Championships).
+  Every guide snapped with misfit ≤ 0.08 mi; CIM's snapped course never strays more than 62 ft from its track.
+- **OSM data:** the public Overpass servers kept timing out, so every new race uses the repo's other OSM route, a
+  local `.osm.pbf` extract read with osmium: BBBike city extracts where one covers the course, otherwise a
+  Geofabrik region (as the original does for Boston). Listed in `PBF` in `pipeline/osm.py`.
+- **One artifact rule added** (`turns.py`, `drop_artifacts`): OSM maps Fair Oaks Blvd at Sunrise Blvd (CIM) as two
   one-way carriageways, and the snap hopped between them across Sunrise, making a fake +127° / −122° pair worth
-  243 ft. Two opposite hairpins within 150 ft that cancel to within 30° are now dropped as a carriageway hop. No
-  other city's published turns contain such a pair, so their numbers would not change.
-- **`export.py`** now merges into the existing `cities.json` instead of rewriting it, so a city can be added
+  243 ft. Two opposite hairpins within 150 ft that cancel to within 30° are now dropped as a carriageway hop. None
+  of Dana's eight cities' published turns contain such a pair, so their numbers would not change.
+- **Known noise, left in on purpose:** where OSM splits a road into parallel carriageways or a plaza into a ring,
+  the snap sometimes zigzags (e.g. Valencia's Plaça de Saragossa, where the GPS track cuts across the plaza but the
+  snapped course goes around it). Counting alternating turns within 250 ft that cancel out, this "jog" share is
+  about 26% of Valencia's total, but it is just as present in the original data (Tokyo 45%, Sydney 25%, Berlin
+  20%). Filtering it for the new races only would make them look better than the Majors, so the method is
+  unchanged; treat every city's number, Valencia's especially, as a little high.
+- **`export.py`** now merges into the existing `cities.json` instead of rewriting it, so races can be added
   without the other cities' raw data (LION, their GPX files).
-- **Files touched:** `pipeline/cities.py` (CIM entry), `pipeline/osm.py` (Sacramento extract),
-  `pipeline/turns.py`, `pipeline/export.py`, `web/public/data/cim/` (new), `web/public/data/cities.json`, and small
-  copy changes in `web/index.html` / `web/src/main.js` ("Compare the Majors + CIM", a "CIM" label, a footer
-  credit). Everything else, including the styling, is unchanged from the original.
+- **Page:** "Compare the races" (was "Compare the Majors"), short labels (CIM, MCM, LA, Grandma's), and a footer
+  credit. Layout and styling are unchanged; the switcher and comparison chart grow to fit every race.
 
-To rebuild CIM:
+To rebuild one of the new races (`cim mcm houston la philly valencia grandmas`), put its GPX in `data/raw/gpx/` and
+its extract in `data/raw/pbf/` (file names in `PBF`), then:
 
 ```bash
-curl -L -o data/raw/pbf/Sacramento.osm.pbf https://download.bbbike.org/osm/bbbike/Sacramento/Sacramento.osm.pbf
-uv run python pipeline/match.py cim        # needs data/raw/gpx/cim.gpx
-uv run python pipeline/turns.py cim
-uv run python pipeline/export.py cim
+uv run python pipeline/match.py valencia
+uv run python pipeline/turns.py valencia
+uv run python pipeline/export.py valencia
 ```
 
 ## Credits
@@ -124,10 +144,10 @@ Built by [Dana Kraushar](https://www.linkedin.com/in/danakraushar/) with
 [Claude Code](https://claude.com/claude-code) (Anthropic) as an AI pair programmer: Dana set the question,
 made the design and method calls, and reviewed each step; Claude wrote most of the code and ran the analysis.
 
-CIM addition: forked by [birdjc](https://github.com/birdjc), again with Claude Code, following Dana's method
+Additional races: forked by [birdjc](https://github.com/birdjc), again with Claude Code, following Dana's method
 unchanged apart from the notes above.
 
 Data: [NYC LION](https://www.nyc.gov/content/planning/pages/resources/datasets/lion) (NYC Department of City
-Planning). CIM streets: OpenStreetMap via [BBBike](https://extract.bbbike.org/) extracts. Basemap © CARTO, © OpenStreetMap contributors. Link-preview map: NYC Open Data
+Planning). Added races: course guides from [goandrace.com](https://goandrace.com) (CIM: Strava); streets from OpenStreetMap via [BBBike](https://extract.bbbike.org/) and [Geofabrik](https://download.geofabrik.de/) extracts. Basemap © CARTO, © OpenStreetMap contributors. Link-preview map: NYC Open Data
 [Borough Boundaries](https://data.cityofnewyork.us/d/gthc-hcne) and US Census Bureau
 [cartographic county boundaries](https://www.census.gov/geographies/mapping-files/time-series/geo/cartographic-boundary.html).

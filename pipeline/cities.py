@@ -1,5 +1,5 @@
-"""The eight Abbott World Marathon Majors plus the California International Marathon (CIM), and where each
-course comes from.
+"""The eight Abbott World Marathon Majors plus seven more big races (CIM, Marine Corps, Houston, Los Angeles,
+Philadelphia, Valencia, Grandma's), and where each course comes from.
 
 Course guides are third-party GPX tracks from goandrace.com (most recent edition available); CIM's is a Strava
 GPS track of the 2025 race (which hosted the USATF Marathon Championships). They're only used as a guide: the course itself is snapped onto OpenStreetMap streets (see match.py).
@@ -43,4 +43,16 @@ CITIES = {c.slug: c for c in [
          GOANDRACE + "2024/sanlam-cape-town-marathon-2024-course-map-1.php"),
     City("cim", "California International Marathon", "Sacramento", 2025,
          "https://www.runsra.org/california-international-marathon"),
+    City("mcm", "Marine Corps Marathon", "Washington", 2024,
+         GOANDRACE + "2024/marine-marathon-2024-arlington-course-map-2.php"),
+    City("houston", "Chevron Houston Marathon", "Houston", 2026,
+         GOANDRACE + "2026/chevron-houston-marathon-2026-course-map-1.php"),
+    City("la", "Los Angeles Marathon", "Los Angeles", 2026,
+         GOANDRACE + "2026/los-angeles-marathon-2026-los-angeles-course-map-1.php"),
+    City("philly", "Philadelphia Marathon", "Philadelphia", 2025,
+         GOANDRACE + "2025/philadelphia-marathon-2025-philadelphia-course-map-1.php"),
+    City("valencia", "Valencia Marathon", "Valencia", 2025,
+         GOANDRACE + "2025/valencia-marathon-2025-valencia-course-map-1.php"),
+    City("grandmas", "Grandma's Marathon", "Duluth", 2025,
+         GOANDRACE + "2025/grandma-s-marathon-2025-duluth-course-map-1.php"),
 ]}

@@ -68,7 +68,10 @@ PBF_DIR = ROOT / "data/raw/pbf"
 # OSM extracts (BBBike city extracts; Geofabrik's Massachusetts for Boston, which starts 26 miles out in Hopkinton).
 # BBBike's Sacramento extract reaches east to -121.15, just past CIM's Folsom start.
 PBF = {"berlin": "Berlin", "london": "London", "chicago": "Chicago", "tokyo": "Tokyo", "sydney": "Sydney",
-       "capetown": "CapeTown", "boston": "Massachusetts", "cim": "Sacramento"}
+       "capetown": "CapeTown", "boston": "Massachusetts", "cim": "Sacramento", "mcm": "WashingtonDC",
+       "la": "LosAngeles", "philly": "Philadelphia",
+       # No BBBike city extract for these, and public Overpass kept timing out: Geofabrik region extracts.
+       "houston": "Texas", "valencia": "ValenciaRegion", "grandmas": "Minnesota"}
 
 
 def read_pbf(slug: str, guide_lonlat: np.ndarray) -> dict:

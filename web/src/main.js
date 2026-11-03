@@ -480,7 +480,7 @@ paceInput.addEventListener('input', updatePace)
 updatePace()
 
 // ---------- Cities: switcher, per-city text, comparison ----------
-const SHORT = { nyc: 'NYC', capetown: 'Cape Town', cim: 'CIM' }
+const SHORT = { nyc: 'NYC', capetown: 'Cape Town', cim: 'CIM', mcm: 'MCM', la: 'LA', grandmas: 'Grandma’s' }
 const nav = d3.select('#cities')
 nav.selectAll('a').data(cities.slice().sort((a, b) => a.city.localeCompare(b.city))).join('a')
   .attr('href', (c) => `#/${c.slug}`).classed('on', (c) => c.slug === SLUG)

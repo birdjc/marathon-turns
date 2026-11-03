@@ -1,6 +1,6 @@
 # Running Wide — notes for Claude
 
-> Fork (birdjc) of dkraushar/marathon-turns that adds CIM (Sacramento) as a ninth race. See README "What this fork
+> Fork (birdjc) of dkraushar/marathon-turns that adds seven races (cim, mcm, houston, la, philly, valencia, grandmas) to the eight Majors. See README "What this fork
 > changes". Notes below are the original author's.
 
 ## Goals
