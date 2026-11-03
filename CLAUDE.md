@@ -1,5 +1,8 @@
 # Running Wide — notes for Claude
 
+> Fork (birdjc) of dkraushar/marathon-turns that adds CIM (Sacramento) as a ninth race. See README "What this fork
+> changes". Notes below are the original author's.
+
 ## Goals
 - Quick personal project for LinkedIn, timed to the NYC Marathon on Sun Nov 1, 2026. Target: live by Fri Oct 30.
 - Dana is learning AI-assisted development: explain the reasoning behind changes, offer options with tradeoffs,

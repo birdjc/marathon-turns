@@ -150,8 +150,10 @@ def build(slug: str):
 
 def comparison(summaries: dict):
     """cities.json: one row per city for the comparison chart. Every city's ranking number comes from OSM, so
-    the method is identical everywhere; NYC also carries its LION number."""
-    rows = []
+    the method is identical everywhere; NYC also carries its LION number. Cities not rebuilt this run keep their
+    existing rows, so one city can be added without the others' raw data."""
+    path = OUT_ROOT / "cities.json"
+    rows = [r for r in json.loads(path.read_text()) if r["slug"] not in summaries] if path.exists() else []
     for slug, page in summaries.items():
         osm = json.loads((PROC / slug / "osm_summary.json").read_text())
         rows.append(dict(slug=slug, name=page["name"], city=page["city"], edition=page["edition"],
@@ -159,7 +161,7 @@ def comparison(summaries: dict):
                          extra_arc_ft=round(osm["extra_arc_ft"]), extra_sharp_ft=round(osm["extra_sharp_ft"]),
                          page_extra_arc_ft=round(page["extra_arc_ft"]), page_source=page["source"]))
     rows.sort(key=lambda r: -r["extra_arc_ft"])
-    write(OUT_ROOT / "cities.json", rows)
+    write(path, rows)
 
 
 if __name__ == "__main__":

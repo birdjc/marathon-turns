@@ -1,5 +1,10 @@
 # Running Wide
 
+> **This is a fork of [dkraushar/marathon-turns](https://github.com/dkraushar/marathon-turns) by
+> [Dana Kraushar](https://www.linkedin.com/in/danakraushar/).** All of the method, code, design and the original
+> eight-city data are Dana's work. This fork adds one race, the **California International Marathon (CIM)** in
+> Sacramento, to the comparison, using the same pipeline and the same page. See [What this fork changes](#what-this-fork-changes).
+
 **How much farther would you run in the NYC Marathon if you took every turn on the outside?**
 
 The marathon is certified along the *shortest possible route*: tangents, hugging every corner 1 ft off the curb.
@@ -22,7 +27,7 @@ feet, however tight or gentle the corner. So the ceiling is Σ *wᵢ·|θᵢ|* o
 ```
 pipeline/lion.py       NYC: load LION street centerlines and build a routable graph
 pipeline/course.py     NYC: rebuild the course street by street, from the race-day road-closure list
-pipeline/cities.py     the eight World Marathon Majors and where each course guide comes from
+pipeline/cities.py     the eight World Marathon Majors (+ CIM) and where each course guide comes from
 pipeline/osm.py        other cities: download OpenStreetMap streets along the course, estimate widths
 pipeline/match.py      snap a GPX course guide onto OpenStreetMap streets
 pipeline/calibrate.py  fit the OSM width estimate to NYC's measured LION widths
@@ -81,13 +86,48 @@ uv run python pipeline/export.py
 cd web && npm install && npm run dev
 ```
 
+## What this fork changes
+
+**Result: CIM (2025 course), about +2,470 ft (0.47 mi) across 56 turns, or +2,720 ft (0.51 mi) corner to
+corner.** That ranks it last of the nine races, just behind Boston: like Boston, it's a point-to-point course
+(Folsom to the State Capitol) with long straight stretches on Folsom-Auburn Rd and Fair Oaks Blvd.
+
+- **Course guide:** a Strava GPS track of the 2025 race (which hosted the USATF Marathon Championships), saved as
+  `data/raw/gpx/cim.gpx` (not committed, like the other cities' GPX files). It's snapped onto OpenStreetMap by
+  the unchanged `match.py`: 26.38 mi guide → 26.44 mi course, never more than 62 ft from the GPS track.
+- **OSM data:** the public Overpass servers timed out on the course corridor, so CIM uses the repo's other OSM
+  route: a local extract read with osmium, here [BBBike's Sacramento extract](https://download.bbbike.org/osm/bbbike/Sacramento/)
+  (it reaches just past the Folsom start). Widths use the same lane-count rule as every other city.
+- **One artifact rule added** (`turns.py`, `drop_artifacts`): OSM maps Fair Oaks Blvd at Sunrise Blvd as two
+  one-way carriageways, and the snap hopped between them across Sunrise, making a fake +127° / −122° pair worth
+  243 ft. Two opposite hairpins within 150 ft that cancel to within 30° are now dropped as a carriageway hop. No
+  other city's published turns contain such a pair, so their numbers would not change.
+- **`export.py`** now merges into the existing `cities.json` instead of rewriting it, so a city can be added
+  without the other cities' raw data (LION, their GPX files).
+- **Files touched:** `pipeline/cities.py` (CIM entry), `pipeline/osm.py` (Sacramento extract),
+  `pipeline/turns.py`, `pipeline/export.py`, `web/public/data/cim/` (new), `web/public/data/cities.json`, and small
+  copy changes in `web/index.html` / `web/src/main.js` ("Compare the Majors + CIM", a "CIM" label, a footer
+  credit). Everything else, including the styling, is unchanged from the original.
+
+To rebuild CIM:
+
+```bash
+curl -L -o data/raw/pbf/Sacramento.osm.pbf https://download.bbbike.org/osm/bbbike/Sacramento/Sacramento.osm.pbf
+uv run python pipeline/match.py cim        # needs data/raw/gpx/cim.gpx
+uv run python pipeline/turns.py cim
+uv run python pipeline/export.py cim
+```
+
 ## Credits
 
 Built by [Dana Kraushar](https://www.linkedin.com/in/danakraushar/) with
 [Claude Code](https://claude.com/claude-code) (Anthropic) as an AI pair programmer: Dana set the question,
 made the design and method calls, and reviewed each step; Claude wrote most of the code and ran the analysis.
 
+CIM addition: forked by [birdjc](https://github.com/birdjc), again with Claude Code, following Dana's method
+unchanged apart from the notes above.
+
 Data: [NYC LION](https://www.nyc.gov/content/planning/pages/resources/datasets/lion) (NYC Department of City
-Planning). Basemap © CARTO, © OpenStreetMap contributors. Link-preview map: NYC Open Data
+Planning). CIM streets: OpenStreetMap via [BBBike](https://extract.bbbike.org/) extracts. Basemap © CARTO, © OpenStreetMap contributors. Link-preview map: NYC Open Data
 [Borough Boundaries](https://data.cityofnewyork.us/d/gthc-hcne) and US Census Bureau
 [cartographic county boundaries](https://www.census.gov/geographies/mapping-files/time-series/geo/cartographic-boundary.html).

@@ -223,16 +223,30 @@ def osm_friendly(name: str) -> str:
 
 HAIRPIN_DEG = 120      # turns sharper than this must also show up in the guide
 GUIDE_WINDOW_FT = 800  # how far along the guide to look for that turn (turnarounds can snap a block early)
+HOP_FT = 150           # two opposite hairpins this close that nearly cancel are a hop between carriageways
+HOP_NET_DEG = 30
 
 
 def drop_artifacts(turns, summary, guide: LineString):
     """Hairpins that the GPX guide doesn't make are snapping artifacts (the street graph forced a loop or a
-    reversal between parallel carriageways). Real turnarounds are in the guide, so they survive."""
+    reversal between parallel carriageways). Real turnarounds are in the guide, so they survive.
+    A back-to-back pair of opposite hairpins that nets out to almost nothing (e.g. CIM at Sunrise Blvd, hopping
+    across a cross street from one one-way carriageway of Fair Oaks Blvd to the other) is dropped as well, even
+    when other guide turns nearby add up to enough to pass the check above."""
+    hop = np.zeros(len(turns), bool)
+    ang, dist = turns.angle_deg.to_numpy(), turns.dist_ft.to_numpy()
+    for i in range(len(turns) - 1):
+        if (min(abs(ang[i]), abs(ang[i + 1])) >= HAIRPIN_DEG and ang[i] * ang[i + 1] < 0
+                and dist[i + 1] - dist[i] <= HOP_FT and abs(ang[i] + ang[i + 1]) <= HOP_NET_DEG):
+            hop[i] = hop[i + 1] = True
     g = np.array(guide.simplify(30).coords)
     g_dist = np.concatenate([[0], np.cumsum(np.hypot(*np.diff(g, axis=0).T))])[1:-1]
     g_ang = np.degrees(vertex_angles(g))
     keep = []
-    for t in turns.itertuples():
+    for t, is_hop in zip(turns.itertuples(), hop):
+        if is_hop:
+            keep.append(False)
+            continue
         if abs(t.angle_deg) < HAIRPIN_DEG:
             keep.append(True)
             continue

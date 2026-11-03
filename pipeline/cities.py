@@ -1,7 +1,8 @@
-"""The eight Abbott World Marathon Majors, and where each course comes from.
+"""The eight Abbott World Marathon Majors plus the California International Marathon (CIM), and where each
+course comes from.
 
-Course guides are third-party GPX tracks from goandrace.com (most recent edition available). They're only
-used as a guide: the course itself is snapped onto OpenStreetMap streets (see match.py).
+Course guides are third-party GPX tracks from goandrace.com (most recent edition available); CIM's is a Strava
+GPS track of the 2025 race (which hosted the USATF Marathon Championships). They're only used as a guide: the course itself is snapped onto OpenStreetMap streets (see match.py).
 """
 
 from dataclasses import dataclass, field
@@ -17,7 +18,7 @@ class City:
     name: str            # "Berlin Marathon"
     city: str            # "Berlin"
     edition: int         # year of the course we measure
-    gpx_source: str      # goandrace course map page the GPX came from
+    gpx_source: str      # course map page the GPX came from (goandrace, or the race's own page)
     # Optional (mile, label) chart sections, like NYC's boroughs.
     sections: list = field(default_factory=list)
 
@@ -40,4 +41,6 @@ CITIES = {c.slug: c for c in [
     City("sydney", "Sydney Marathon", "Sydney", 2025, GOANDRACE + "2025/tcs-sydney-marathon-2025-course-map-1.php"),
     City("capetown", "Cape Town Marathon", "Cape Town", 2024,
          GOANDRACE + "2024/sanlam-cape-town-marathon-2024-course-map-1.php"),
+    City("cim", "California International Marathon", "Sacramento", 2025,
+         "https://www.runsra.org/california-international-marathon"),
 ]}
